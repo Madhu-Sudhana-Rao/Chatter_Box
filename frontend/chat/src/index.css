@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+.str-chat {
+    height: 100%;
+}
+
+.str-chat__main-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.str-chat__message-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.str-chat__avatar,
+.str-chat__message-simple__avatar {
+    width: 36px !important;
+    height: 36px !important;
+}
