@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "build": "cd ../frontend && npm install && npm run build",
+    "build": "cd ../frontend/chat && npm install && npm run build",
     "start": "npm run build && node src/server.js"
   },
   "keywords": [],
