@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams } from "react-router";
 import useAuthUser from "../hooks/useAuthUser";
 import { useQuery } from "@tanstack/react-query";
 import { getStreamToken } from "../lib/api";
 
 import {
-  Chat,
   Channel,
   ChannelHeader,
-  MessageList,
+  Chat,
   MessageInput,
+  MessageList,
   Thread,
   Window,
 } from "stream-chat-react";
@@ -26,11 +26,9 @@ const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 
 const ChatPage = () => {
   const { id: targetUserId } = useParams();
-
   const [chatClient, setChatClient] = useState(null);
   const [channel, setChannel] = useState(null);
   const [loading, setLoading] = useState(true);
-
   const { authUser } = useAuthUser();
 
   const { data: tokenData } = useQuery({
@@ -44,8 +42,6 @@ const ChatPage = () => {
       if (!tokenData?.token || !authUser) return;
 
       try {
-        console.log("Connecting to Stream Chat...");
-
         const client = StreamChat.getInstance(STREAM_API_KEY);
 
         await client.connectUser(
@@ -58,7 +54,6 @@ const ChatPage = () => {
         );
 
         const channelId = [authUser._id, targetUserId].sort().join("-");
-
         const currChannel = client.channel("messaging", channelId, {
           members: [authUser._id, targetUserId],
         });
@@ -78,22 +73,18 @@ const ChatPage = () => {
     initChat();
 
     return () => {
-      if (chatClient) {
-        chatClient.disconnectUser().catch((err) =>
-          console.warn("Error disconnecting user:", err)
-        );
-      }
+      chatClient?.disconnectUser().catch((err) =>
+        console.warn("Error disconnecting user:", err)
+      );
     };
   }, [tokenData, authUser, targetUserId]);
 
   const handleVideoCall = () => {
     if (channel) {
       const callUrl = `${window.location.origin}/call/${channel.id}`;
-
       channel.sendMessage({
         text: `I've started a video call. Join me here: ${callUrl}`,
       });
-
       toast.success("Video call link sent successfully!");
     }
   };
@@ -101,32 +92,20 @@ const ChatPage = () => {
   if (loading || !chatClient || !channel) return <ChatLoader />;
 
   return (
-    <div className="flex items-center justify-center h-[93vh] bg-base-100">
-      <div className="w-full max-w-4xl h-full rounded-xl border border-base-300 bg-base-200 shadow-md overflow-hidden">
-        <Chat client={chatClient} theme="str-chat__theme-light">
-          <Channel channel={channel}>
-            <div className="flex flex-col h-full">
-              <CallButton handleVideoCall={handleVideoCall} />
-
-              <div className="flex flex-col flex-1 overflow-hidden">
-                <Window>
-                  <div className="flex flex-col h-full">
-                    <ChannelHeader className="!bg-base-300 !rounded-t-xl" />
-                    <div className="flex-1 overflow-y-auto">
-                      <MessageList className="!bg-base-200" />
-                    </div>
-                    <MessageInput className="!bg-base-300 !rounded-b-xl" focus />
-                  </div>
-                </Window>
-
-                <div className="h-0 overflow-y-auto">
-                  <Thread />
-                </div>
-              </div>
-            </div>
-          </Channel>
-        </Chat>
-      </div>
+    <div className="h-screen w-screen overflow-hidden bg-base-100">
+      <Chat client={chatClient} theme="str-chat__theme-light">
+        <Channel channel={channel}>
+          <div className="flex flex-col h-full w-full">
+            <CallButton handleVideoCall={handleVideoCall} />
+            <Window className="flex flex-col flex-1 overflow-hidden">
+              <ChannelHeader className="!bg-base-300" />
+              <MessageList className="flex-1 overflow-y-auto bg-base-200" />
+              <MessageInput className="!bg-base-300" focus />
+            </Window>
+            <Thread className="h-0 overflow-hidden" />
+          </div>
+        </Channel>
+      </Chat>
     </div>
   );
 };
