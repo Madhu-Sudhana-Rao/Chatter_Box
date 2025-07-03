@@ -3,6 +3,7 @@ import { MessageCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import image from "../assets/image.jpeg";
 import isLogin from "../hooks/isLogin";
+import { useQueryClient } from "@tanstack/react-query";
 
 const LoginPage = () => {
   const [loginData, setLoginData] = useState({
@@ -11,22 +12,21 @@ const LoginPage = () => {
   });
 
   const navigate = useNavigate();
+  const queryClient = useQueryClient(); 
   const { isPending, error, loginMutation } = isLogin();
 
   const handleLogin = (e) => {
     e.preventDefault();
     loginMutation(loginData, {
       onSuccess: () => {
+        queryClient.invalidateQueries(["authUser"]); 
         navigate("/");
       },
     });
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center bg-base-200 px-3"
-      data-theme="dracula"
-    >
+    <div className="min-h-screen flex items-center justify-center bg-base-200 px-3" data-theme="dracula">
       <div className="flex flex-col md:flex-row w-full max-w-3xl bg-base-100 rounded-2xl shadow-xl overflow-hidden">
         {/* Form Section */}
         <div className="w-full md:w-1/2 p-6 flex flex-col justify-center">
@@ -58,9 +58,7 @@ const LoginPage = () => {
               placeholder="Email"
               className="input input-bordered w-full"
               value={loginData.email}
-              onChange={(e) =>
-                setLoginData({ ...loginData, email: e.target.value })
-              }
+              onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
               required
             />
             <input
@@ -68,9 +66,7 @@ const LoginPage = () => {
               placeholder="Password"
               className="input input-bordered w-full"
               value={loginData.password}
-              onChange={(e) =>
-                setLoginData({ ...loginData, password: e.target.value })
-              }
+              onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
               required
             />
             <div className="flex items-start text-xs gap-2">
@@ -88,10 +84,7 @@ const LoginPage = () => {
 
           <p className="mt-3 text-center text-xs">
             Don&apos;t have an account?{" "}
-            <Link
-              to="/signup"
-              className="text-primary font-medium hover:underline"
-            >
+            <Link to="/signup" className="text-primary font-medium hover:underline">
               Sign up
             </Link>
           </p>
@@ -100,17 +93,11 @@ const LoginPage = () => {
         {/* Image Section */}
         <div className="w-full md:w-1/2 flex flex-col">
           <div className="flex-1 relative h-56 md:h-auto">
-            <img
-              src={image}
-              alt="Chat"
-              className="w-full h-full object-cover"
-            />
+            <img src={image} alt="Chat" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/40 rounded-r-2xl md:rounded-none" />
           </div>
           <div className="p-3 bg-base-100 text-center">
-            <h2 className="text-sm font-semibold text-white">
-              Talk. Connect. Grow.
-            </h2>
+            <h2 className="text-sm font-semibold text-white">Talk. Connect. Grow.</h2>
             <p className="text-[10px] opacity-70 text-base-content mt-1">
               Make new friends and chat across cultures.
             </p>
