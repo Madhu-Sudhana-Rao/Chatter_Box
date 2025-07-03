@@ -15,8 +15,6 @@ const Navbar = () => {
     <nav className="bg-base-200 border-b border-base-300 sticky top-0 z-30 h-16 flex items-center">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between w-full">
-
-          {/* App Logo and Name (Visible only on Chat Page) */}
           {isChatPage ? (
             <div className="flex items-center gap-2">
               <Link to="/" className="flex items-center gap-2.5">
@@ -27,23 +25,18 @@ const Navbar = () => {
               </Link>
             </div>
           ) : (
-            <div /> // Empty div to keep spacing consistent
+            <div />
           )}
 
-          {/* Right Section */}
           <div className="flex items-center gap-3 sm:gap-4">
-
-            {/* Notifications */}
             <Link to="/notifications">
               <button className="btn btn-ghost btn-circle">
                 <BellIcon className="size-6 text-base-content opacity-70" />
               </button>
             </Link>
 
-            {/* Theme Selector */}
             <ThemeSelector />
 
-            {/* User Avatar */}
             <div className="avatar">
               <div className="w-9 rounded-full">
                 <img
@@ -54,7 +47,6 @@ const Navbar = () => {
               </div>
             </div>
 
-            {/* Logout */}
             <button
               className="btn btn-ghost btn-circle"
               onClick={logoutMutation}
