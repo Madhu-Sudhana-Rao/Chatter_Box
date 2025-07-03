@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import useAuthUser from '../hooks/useAuthUser';
-import { useQuery } from '@tanstack/react-query';
-import { getStreamToken } from '../lib/api';
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import useAuthUser from "../hooks/useAuthUser";
+import { useQuery } from "@tanstack/react-query";
+import { getStreamToken } from "../lib/api";
 
 import {
   StreamVideo,
@@ -13,17 +13,16 @@ import {
   StreamTheme,
   CallingState,
   useCallStateHooks,
-} from '@stream-io/video-react-sdk';
+} from "@stream-io/video-react-sdk";
 
-import '@stream-io/video-react-sdk/dist/css/styles.css';
-import toast from 'react-hot-toast';
-import PageLoader from '../components/PageLoader';
+import "@stream-io/video-react-sdk/dist/css/styles.css";
+import toast from "react-hot-toast";
+import PageLoader from "../components/PageLoader";
 
 const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 
 const CallPage = () => {
   const { id: callId } = useParams();
-  const location = useLocation();
   const navigate = useNavigate();
 
   const [client, setClient] = useState(null);
@@ -32,10 +31,8 @@ const CallPage = () => {
 
   const { authUser, isLoading } = useAuthUser();
 
-  const isAudioOnly = new URLSearchParams(location.search).get('audioOnly') === 'true';
-
   const { data: tokenData } = useQuery({
-    queryKey: ['streamToken'],
+    queryKey: ["streamToken"],
     queryFn: getStreamToken,
     enabled: !!authUser,
   });
@@ -59,19 +56,14 @@ const CallPage = () => {
 
         await videoClient.connectUser(user, tokenData.token);
 
-        const callInstance = videoClient.call('default', callId);
-
-        await callInstance.join({
-          create: true,
-          audio: true,
-          video: !isAudioOnly,
-        });
+        const callInstance = videoClient.call("default", callId);
+        await callInstance.join({ create: true });
 
         setClient(videoClient);
         setCall(callInstance);
       } catch (error) {
-        console.error('Error joining call:', error);
-        toast.error('Could not join the call. Please try again.');
+        console.error("Error joining call:", error);
+        toast.error("Could not join the call. Please try again.");
       } finally {
         setIsConnecting(false);
       }
@@ -82,7 +74,7 @@ const CallPage = () => {
     return () => {
       if (client) client.disconnectUser();
     };
-  }, [tokenData, authUser, callId, isAudioOnly]);
+  }, [tokenData, authUser, callId]);
 
   if (isLoading || isConnecting) return <PageLoader />;
 
@@ -109,7 +101,9 @@ const CallContent = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (callingState === CallingState.LEFT) navigate('/');
+    if (callingState === CallingState.LEFT) {
+      navigate("/");
+    }
   }, [callingState, navigate]);
 
   return (
