@@ -1,9 +1,9 @@
 import express from "express";
-import { getChatToken } from "../controllers/chat_controller.js";
-import { protectRoute } from "../middleware/protectRoute.js";
+import { protectRoute } from "../middlewares/auth_middleware.js";
+import { getStreamToken } from "../controllers/chat_controllers.js";
 
 const router = express.Router();
 
-router.get("/token", protectRoute, getChatToken);
+router.get("/token", protectRoute, getStreamToken);
 
 export default router;
