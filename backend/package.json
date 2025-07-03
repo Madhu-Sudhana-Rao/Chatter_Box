@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "build": "cd ../frontend/chat && npm install && npm run build",
-    "start": "node src/server.js"
+    "start": "npm run build && node --max-old-space-size=1024 src/server.js"
   },
   "keywords": [],
   "author": "",
