@@ -92,17 +92,19 @@ const ChatPage = () => {
   if (loading || !chatClient || !channel) return <ChatLoader />;
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-base-100">
+    <div className="h-[93vh] w-full overflow-hidden bg-base-100">
       <Chat client={chatClient} theme="str-chat__theme-light">
         <Channel channel={channel}>
-          <div className="flex flex-col h-full w-full">
+          <div className="flex flex-col h-full">
             <CallButton handleVideoCall={handleVideoCall} />
             <Window className="flex flex-col flex-1 overflow-hidden">
               <ChannelHeader className="!bg-base-300" />
-              <MessageList className="flex-1 overflow-y-auto bg-base-200" />
+              <div className="flex-1 overflow-y-auto">
+                <MessageList className="bg-base-200" />
+              </div>
               <MessageInput className="!bg-base-300" focus />
             </Window>
-            <Thread className="h-0 overflow-hidden" />
+            <Thread className="hidden" />
           </div>
         </Channel>
       </Chat>
