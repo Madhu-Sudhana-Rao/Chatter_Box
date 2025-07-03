@@ -1,34 +1,39 @@
 import { StreamChat } from "stream-chat";
 import "dotenv/config";
 
-const apiKey = process.env.STEAM_API_KEY;         
-const apiSecret = process.env.STEAM_API_SECRET;
+const getStreamClient = () => {
+    const apiKey = process.env.STEAM_API_KEY;
+    const apiSecret = process.env.STEAM_API_SECRET;
 
-if (!apiKey || !apiSecret) {
-    console.error("Stream API key or Secret is missing");
-}
+    if (!apiKey || !apiSecret) {
+        console.error("Stream API key or Secret is missing");
+        throw new Error("Missing Stream credentials");
+    }
 
-const streamClient = StreamChat.getInstance(apiKey, apiSecret);
+    return StreamChat.getInstance(apiKey, apiSecret);
+};
 
 export const upsertStreamUser = async (userData) => {
     try {
-        await streamClient.upsertUsers([userData]);
+        const client = getStreamClient();
+        await client.upsertUsers([userData]);
         return userData;
     } catch (error) {
-        console.error("Error creating stream user", error.message);
+        console.error("Error creating stream user:", error.message);
+        throw error;
     }
 };
 
 export const generateStreamToken = (userId) => {
     try {
         if (!userId) {
-            console.error("Missing userId for token generation");
-            return null;
+            throw new Error("Missing userId for token generation");
         }
 
-        return streamClient.createToken(userId.toString());
+        const client = getStreamClient();
+        return client.createToken(userId.toString());
     } catch (error) {
-        console.error("Error generating Stream token", error.message);
+        console.error("Error generating Stream token:", error.message);
         return null;
     }
 };
