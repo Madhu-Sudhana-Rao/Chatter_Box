@@ -26,6 +26,8 @@ const CallPage = () => {
   const navigate = useNavigate();
 
   const clientRef = useRef(null);
+  const callRef = useRef(null);
+
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
   const [isConnecting, setIsConnecting] = useState(true);
@@ -33,7 +35,6 @@ const CallPage = () => {
 
   const { authUser, isLoading: isAuthLoading } = useAuthUser();
 
-  // Redirect unauthenticated users
   useEffect(() => {
     if (!isAuthLoading && !authUser) {
       navigate("/login");
@@ -66,8 +67,10 @@ const CallPage = () => {
         clientRef.current = videoClient;
 
         await videoClient.connectUser(user, tokenData.token);
-
         const callInstance = videoClient.call("default", callId);
+
+        callRef.current = callInstance;
+
         await callInstance.join({ create: true });
 
         setClient(videoClient);
@@ -85,9 +88,9 @@ const CallPage = () => {
 
     return () => {
       if (clientRef.current) {
-        clientRef.current.disconnectUser().catch((err) =>
-          console.warn("Disconnect error:", err)
-        );
+        clientRef.current
+          .disconnectUser()
+          .catch((err) => console.warn("Disconnect error:", err));
       }
     };
   }, [tokenData, authUser, callId]);
@@ -118,12 +121,19 @@ const CallContent = () => {
   const callingState = useCallCallingState();
   const navigate = useNavigate();
 
+  const [hasEverJoined, setHasEverJoined] = useState(false);
+
   useEffect(() => {
-    if (callingState === CallingState.LEFT) {
-      console.log("User left the call.");
+    console.log("📞 Call state:", callingState);
+
+    if (callingState === CallingState.JOINED) {
+      setHasEverJoined(true);
+    }
+
+    if (callingState === CallingState.LEFT && hasEverJoined) {
       setTimeout(() => navigate("/"), 1000);
     }
-  }, [callingState, navigate]);
+  }, [callingState, hasEverJoined, navigate]);
 
   return (
     <StreamTheme>
