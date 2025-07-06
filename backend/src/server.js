@@ -11,9 +11,21 @@ dotenv.config();
 
 const app = express();
 
+const allowedOrigins = [
+  "https://chatter-box-2-nvjm.onrender.com", 
+  "https://chatter-box-3.onrender.com",      
+  "http://localhost:5173",                 
+];
+
 app.use(
   cors({
-    origin: "https://chatter-box-3.onrender.com",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed for: " + origin));
+      }
+    },
     credentials: true,
   })
 );
@@ -28,6 +40,6 @@ app.use("/api/chat", chatRoutes);
 connectDB().then(() => {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(`✅ Server running at http://localhost:${PORT}`);
   });
 });
