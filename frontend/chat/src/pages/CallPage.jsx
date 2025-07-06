@@ -28,18 +28,30 @@ const CallPage = () => {
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
   const [isConnecting, setIsConnecting] = useState(true);
+  const [hasJoined, setHasJoined] = useState(false);
 
-  const { authUser, isLoading } = useAuthUser();
+  const { authUser, isLoading: isAuthLoading, isError: isAuthError } = useAuthUser();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthLoading && !authUser) {
+      navigate("/login");
+    }
+  }, [authUser, isAuthLoading, navigate]);
 
   const { data: tokenData } = useQuery({
     queryKey: ["streamToken"],
     queryFn: getStreamToken,
-    enabled: !!authUser,
+    enabled: !isAuthLoading && !!authUser,
+    retry: false,
   });
 
   useEffect(() => {
     const initCall = async () => {
-      if (!tokenData?.token || !authUser || !callId) return;
+      if (!tokenData?.token || !authUser || !callId) {
+        setIsConnecting(false);
+        return;
+      }
 
       try {
         const user = {
@@ -48,10 +60,7 @@ const CallPage = () => {
           image: authUser.profilePic,
         };
 
-        const videoClient = new StreamVideoClient({
-          apiKey: STREAM_API_KEY,
-        });
-
+        const videoClient = new StreamVideoClient({ apiKey: STREAM_API_KEY });
         await videoClient.connectUser(user, tokenData.token);
 
         const callInstance = videoClient.call("default", callId);
@@ -59,6 +68,7 @@ const CallPage = () => {
 
         setClient(videoClient);
         setCall(callInstance);
+        setHasJoined(true);
       } catch (error) {
         console.error("Error joining call:", error);
         toast.error("Could not join the call. Please try again.");
@@ -70,25 +80,29 @@ const CallPage = () => {
     initCall();
 
     return () => {
-      if (client) client.disconnectUser();
+      if (client) {
+        client.disconnectUser().catch(err => console.warn("Disconnect error:", err));
+      }
     };
   }, [tokenData, authUser, callId]);
 
-  if (isLoading || isConnecting) return <PageLoader />;
+  if (isAuthLoading || isConnecting) return <PageLoader />;
+
+  if (!client || !call || !hasJoined) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p>Could not initialize call. Please refresh or try again later.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen w-screen flex items-center justify-center bg-base-100">
-      {client && call ? (
-        <StreamVideo client={client}>
-          <StreamCall call={call}>
-            <CallContent />
-          </StreamCall>
-        </StreamVideo>
-      ) : (
-        <div className="flex items-center justify-center h-full">
-          <p>Could not initialize call. Please refresh or try again later.</p>
-        </div>
-      )}
+      <StreamVideo client={client}>
+        <StreamCall call={call}>
+          <CallContent />
+        </StreamCall>
+      </StreamVideo>
     </div>
   );
 };
@@ -100,7 +114,7 @@ const CallContent = () => {
 
   useEffect(() => {
     if (callingState === CallingState.LEFT) {
-      navigate("/");
+      setTimeout(() => navigate("/"), 1000);
     }
   }, [callingState, navigate]);
 
