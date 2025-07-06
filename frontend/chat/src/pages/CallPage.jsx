@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useAuthUser from "../hooks/useAuthUser";
 import { useQuery } from "@tanstack/react-query";
@@ -25,14 +25,15 @@ const CallPage = () => {
   const { id: callId } = useParams();
   const navigate = useNavigate();
 
+  const clientRef = useRef(null);
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
   const [isConnecting, setIsConnecting] = useState(true);
   const [hasJoined, setHasJoined] = useState(false);
 
-  const { authUser, isLoading: isAuthLoading, isError: isAuthError } = useAuthUser();
+  const { authUser, isLoading: isAuthLoading } = useAuthUser();
 
-  // Redirect to login if not authenticated
+  // Redirect unauthenticated users
   useEffect(() => {
     if (!isAuthLoading && !authUser) {
       navigate("/login");
@@ -49,6 +50,7 @@ const CallPage = () => {
   useEffect(() => {
     const initCall = async () => {
       if (!tokenData?.token || !authUser || !callId) {
+        console.warn("Missing auth, token, or call ID.");
         setIsConnecting(false);
         return;
       }
@@ -61,6 +63,8 @@ const CallPage = () => {
         };
 
         const videoClient = new StreamVideoClient({ apiKey: STREAM_API_KEY });
+        clientRef.current = videoClient;
+
         await videoClient.connectUser(user, tokenData.token);
 
         const callInstance = videoClient.call("default", callId);
@@ -80,8 +84,10 @@ const CallPage = () => {
     initCall();
 
     return () => {
-      if (client) {
-        client.disconnectUser().catch(err => console.warn("Disconnect error:", err));
+      if (clientRef.current) {
+        clientRef.current.disconnectUser().catch((err) =>
+          console.warn("Disconnect error:", err)
+        );
       }
     };
   }, [tokenData, authUser, callId]);
@@ -114,6 +120,7 @@ const CallContent = () => {
 
   useEffect(() => {
     if (callingState === CallingState.LEFT) {
+      console.log("User left the call.");
       setTimeout(() => navigate("/"), 1000);
     }
   }, [callingState, navigate]);
