@@ -1,46 +1,61 @@
 import { StreamChat } from "stream-chat";
+import { StreamVideoClient } from "@stream-io/video-node-sdk";
 import "dotenv/config";
 
-let streamClient = null;
+const apiKey = process.env.STEAM_API_KEY;
+const apiSecret = process.env.STEAM_API_SECRET;
 
-const getStreamClient = () => {
-  if (streamClient) return streamClient;
+if (!apiKey || !apiSecret) {
+  console.error("Missing STEAM_API_KEY or STEAM_API_SECRET");
+  throw new Error("Missing Stream credentials");
+}
 
-  const apiKey = process.env.STEAM_API_KEY;
-  const apiSecret = process.env.STEAM_API_SECRET;
+let chatClient = null;
+let videoClient = null;
 
-  if (!apiKey || !apiSecret) {
-    console.error("Stream API key or Secret is missing");
-    throw new Error("Missing Stream credentials");
+const getChatClient = () => {
+  if (!chatClient) {
+    chatClient = StreamChat.getInstance(apiKey, apiSecret);
   }
-
-  streamClient = StreamChat.getInstance(apiKey, apiSecret);
-  return streamClient;
+  return chatClient;
 };
 
+const getVideoClient = () => {
+  if (!videoClient) {
+    videoClient = new StreamVideoClient({ apiKey, apiSecret });
+  }
+  return videoClient;
+};
 
 export const upsertStreamUser = async (userData) => {
   try {
-    const client = getStreamClient();
+    const client = getChatClient();
     await client.upsertUsers([userData]);
     return userData;
   } catch (error) {
-    console.error("Error creating stream user:", error.message);
+    console.error("Error creating Stream user:", error.message);
     throw error;
   }
 };
 
+export const generateChatToken = (userId) => {
+  try {
+    if (!userId) throw new Error("Missing userId for chat token");
+    const client = getChatClient();
+    return client.createToken(userId.toString());
+  } catch (error) {
+    console.error("Error generating chat token:", error.message);
+    return null;
+  }
+};
 
 export const generateStreamToken = (userId) => {
   try {
-    if (!userId) {
-      throw new Error("Missing userId for token generation");
-    }
-
-    const client = getStreamClient();
+    if (!userId) throw new Error("Missing userId for video token");
+    const client = getVideoClient();
     return client.createToken(userId.toString());
   } catch (error) {
-    console.error("Error generating Stream token:", error.message);
+    console.error("Error generating video token:", error.message);
     return null;
   }
 };
