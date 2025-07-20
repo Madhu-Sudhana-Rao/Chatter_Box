@@ -29,7 +29,7 @@ export const upsertStreamUser = async (userData) => {
   }
 };
 
-export const generateChatToken = (userId) => {
+export const generateStreamToken = (userId) => {
   try {
     if (!userId) throw new Error("Missing userId for chat token");
     const client = getChatClient();
