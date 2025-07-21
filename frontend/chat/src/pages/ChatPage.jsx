@@ -37,11 +37,13 @@ const ChatPage = () => {
   });
 
   useEffect(() => {
+    let client;
+
     const initChat = async () => {
       if (!tokenData?.token || !authUser) return;
 
       try {
-        const client = StreamChat.getInstance(STREAM_API_KEY);
+        client = StreamChat.getInstance(STREAM_API_KEY);
 
         await client.connectUser(
           {
@@ -72,13 +74,13 @@ const ChatPage = () => {
     initChat();
 
     return () => {
-      chatClient?.disconnectUser().catch((err) =>
+      client?.disconnectUser().catch((err) =>
         console.warn("Error disconnecting user:", err)
       );
     };
   }, [tokenData, authUser, targetUserId]);
 
-  if (loading || !chatClient || !channel) return <ChatLoader />;
+  if (loading || !chatClient || !channel) return <div>Loading chat...</div>;
 
   return (
     <div className="h-[93vh] w-full overflow-hidden bg-base-100">
