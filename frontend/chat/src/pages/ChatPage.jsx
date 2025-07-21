@@ -18,7 +18,6 @@ import { StreamChat } from "stream-chat";
 import toast from "react-hot-toast";
 
 import ChatLoader from "../components/ChatLoader";
-import CallButton from "../components/CallButton";
 
 import "stream-chat-react/dist/css/v2/index.css";
 
@@ -79,16 +78,6 @@ const ChatPage = () => {
     };
   }, [tokenData, authUser, targetUserId]);
 
-  const handleVideoCall = () => {
-    if (channel) {
-      const callUrl = `${window.location.origin}/call/${channel.id}`;
-      channel.sendMessage({
-        text: `I've started a video call. Join me here: ${callUrl}`,
-      });
-      toast.success("Video call link sent successfully!");
-    }
-  };
-
   if (loading || !chatClient || !channel) return <ChatLoader />;
 
   return (
@@ -96,7 +85,6 @@ const ChatPage = () => {
       <Chat client={chatClient} theme="str-chat__theme-light">
         <Channel channel={channel}>
           <div className="flex flex-col h-full">
-            <CallButton handleVideoCall={handleVideoCall} />
             <Window className="flex flex-col flex-1 overflow-hidden">
               <ChannelHeader className="!bg-base-300" />
               <div className="flex-1 overflow-y-auto">
