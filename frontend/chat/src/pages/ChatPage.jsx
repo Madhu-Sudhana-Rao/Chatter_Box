@@ -31,17 +31,31 @@ const ChatPage = () => {
   const [loading, setLoading] = useState(true);
   const { authUser } = useAuthUser();
 
-  const { data: tokenData } = useQuery({
+  const { data: tokenData, isError, error, isLoading } = useQuery({
     queryKey: ["streamToken"],
     queryFn: getStreamToken,
     enabled: !!authUser,
   });
 
   useEffect(() => {
+    let isMounted = true;
+
     const initChat = async () => {
-      if (!tokenData?.token || !authUser) return;
+      console.log("initChat called");
+      if (!authUser) {
+        console.warn("authUser is missing");
+        setLoading(false);
+        return;
+      }
+
+      if (!tokenData?.token) {
+        console.warn("Stream token is missing", tokenData);
+        setLoading(false);
+        return;
+      }
 
       try {
+        console.log("Connecting user to Stream...");
         const client = StreamChat.getInstance(STREAM_API_KEY);
 
         await client.connectUser(
@@ -54,28 +68,34 @@ const ChatPage = () => {
         );
 
         const channelId = [authUser._id, targetUserId].sort().join("-");
+        console.log("Creating/Watching channel:", channelId);
         const currChannel = client.channel("messaging", channelId, {
           members: [authUser._id, targetUserId],
         });
 
         await currChannel.watch();
 
-        setChatClient(client);
-        setChannel(currChannel);
+        if (isMounted) {
+          setChatClient(client);
+          setChannel(currChannel);
+        }
       } catch (error) {
         console.error("Error initializing chat:", error);
         toast.error("Could not connect to chat. Please try again.");
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     initChat();
 
     return () => {
-      chatClient?.disconnectUser().catch((err) =>
-        console.warn("Error disconnecting user:", err)
-      );
+      isMounted = false;
+      if (chatClient) {
+        chatClient.disconnectUser().catch((err) =>
+          console.warn("Error disconnecting user:", err)
+        );
+      }
     };
   }, [tokenData, authUser, targetUserId]);
 
@@ -89,7 +109,14 @@ const ChatPage = () => {
     }
   };
 
-  if (loading || !chatClient || !channel) return <ChatLoader />;
+  if (loading || !chatClient || !channel) {
+    console.log("Loading:", loading);
+    console.log("authUser:", authUser);
+    console.log("tokenData:", tokenData);
+    console.log("chatClient:", chatClient);
+    console.log("channel:", channel);
+    return <ChatLoader />;
+  }
 
   return (
     <div className="h-[93vh] w-full overflow-hidden bg-base-100">
