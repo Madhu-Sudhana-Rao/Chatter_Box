@@ -1,4 +1,5 @@
-import { generateStreamToken } from "../lib/stream.js";
+
+import { generateStreamToken, upsertStreamUser } from "../lib/stream.js";
 
 export async function getStreamToken(req, res) {
   try {
@@ -7,6 +8,12 @@ export async function getStreamToken(req, res) {
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized: User ID missing" });
     }
+
+    await upsertStreamUser({
+      id: userId,
+      name: req.user?.fullName || "Anonymous",
+      image: req.user?.profilePic || "",
+    });
 
     const token = generateStreamToken(userId);
 
