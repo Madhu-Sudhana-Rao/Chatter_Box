@@ -2,12 +2,14 @@ import { upsertStreamUser } from "../lib/stream.js";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 
+// Helper to generate token
 const generateToken = (userId) => {
     return jwt.sign({ userId }, process.env.JWT_SECRET_KEY, {
         expiresIn: "7d",
     });
 };
 
+// Signup
 export async function signup(req, res) {
     const { email, password, fullName } = req.body;
 
@@ -62,6 +64,7 @@ export async function signup(req, res) {
     }
 }
 
+// Login
 export async function login(req, res) {
     const { email, password } = req.body;
 
@@ -96,6 +99,7 @@ export async function login(req, res) {
     }
 }
 
+// Logout
 export function logout(req, res) {
     res.clearCookie("jwt", {
         httpOnly: true,
@@ -105,6 +109,7 @@ export function logout(req, res) {
     res.status(200).json({ success: true, message: "Logged out successfully" });
 }
 
+// Onboarding
 export async function onboard(req, res) {
     const userId = req.userId;
     const { fullName, bio, nativeLanguage, learningLanguage, location } = req.body;
@@ -133,6 +138,22 @@ export async function onboard(req, res) {
         res.status(200).json({ success: true, user: updatedUser });
     } catch (error) {
         console.error("Onboarding Error:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+}
+
+// ✅ /auth/me
+export async function getMe(req, res) {
+    try {
+        const user = await User.findById(req.userId).select("-password");
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({ success: true, user });
+    } catch (error) {
+        console.error("GetMe Error:", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 }
