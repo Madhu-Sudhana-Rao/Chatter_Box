@@ -66,6 +66,6 @@ export const rejectFriendRequest = async (requestId) => {
 };
 
 export const getStreamToken = async () => {
-  const response = await axiosInstance.get("/api/stream/token");
+  const response = await axiosInstance.get("stream/token");
   return { token: response.data.token };
 };
