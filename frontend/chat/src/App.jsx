@@ -20,18 +20,19 @@ const App = () => {
   const isAuthenticated = Boolean(authUser);
   const isOnboarded = Boolean(authUser?.isOnboarded);
 
+  // ✅ Apply theme to the HTML root tag
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  if (isLoading) return <PageLoader />;
+  if (isLoading) {
+    return <PageLoader />;
+  }
 
   return (
     <div className="min-h-screen">
       <Toaster position="top-right" />
-
       <Routes>
-        {/* Home */}
         <Route
           path="/"
           element={
@@ -40,12 +41,10 @@ const App = () => {
                 <HomePage />
               </Layout>
             ) : (
-              <Navigate to={isAuthenticated ? '/onboarding' : '/login'} />
+              <Navigate to={!isAuthenticated ? '/login' : '/onboarding'} />
             )
           }
         />
-
-        {/* Auth Routes */}
         <Route
           path="/login"
           element={
@@ -66,8 +65,41 @@ const App = () => {
             )
           }
         />
+        <Route
+          path="/notification"
+          element={
+            isAuthenticated && isOnboarded ? (
+              <Layout showSidebar={true}>
+                <NotificationPage />
+              </Layout>
+            ) : (
+              <Navigate to={!isAuthenticated ? '/login' : '/onboarding'} />
+            )
+          }
+        />
+        <Route
+          path="/call/:id"
+          element={
+            isAuthenticated && isOnboarded ? (
+              <CallPage />
+            ) : (
+              <Navigate to={!isAuthenticated ? '/login' : '/onboarding'} />
+            )
+          }
+        />
+        <Route
+          path="/chat/:id"
+          element={
+            isAuthenticated && isOnboarded ? (
+              <Layout showSidebar={false}>
+                <ChatPage />
+              </Layout>
+            ) : (
+              <Navigate to={!isAuthenticated ? "/login" : "/onboarding"} />
+            )
+          }
+        />
 
-        {/* Onboarding */}
         <Route
           path="/onboarding"
           element={
@@ -82,46 +114,7 @@ const App = () => {
             )
           }
         />
-
-        {/* Protected Routes */}
-        <Route
-          path="/notification"
-          element={
-            isAuthenticated && isOnboarded ? (
-              <Layout showSidebar={true}>
-                <NotificationPage />
-              </Layout>
-            ) : (
-              <Navigate to={isAuthenticated ? '/onboarding' : '/login'} />
-            )
-          }
-        />
-
-        <Route
-          path="/call/:id"
-          element={
-            isAuthenticated && isOnboarded ? (
-              <CallPage />
-            ) : (
-              <Navigate to={isAuthenticated ? '/onboarding' : '/login'} />
-            )
-          }
-        />
-
-        <Route
-          path="/chat/:id"
-          element={
-            isAuthenticated && isOnboarded ? (
-              <Layout showSidebar={false}>
-                <ChatPage />
-              </Layout>
-            ) : (
-              <Navigate to={isAuthenticated ? '/onboarding' : '/login'} />
-            )
-          }
-        />
-
-        {/* Fallback */}
+        {/* Wildcard fallback route */}
         <Route
           path="*"
           element={<Navigate to={isAuthenticated ? '/' : '/login'} />}
@@ -131,4 +124,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default App; 
